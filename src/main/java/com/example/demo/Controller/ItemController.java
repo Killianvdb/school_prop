@@ -17,10 +17,11 @@ public class ItemController {
     }
 
     // GET all items
-    @GetMapping
+    @GetMapping(produces = "application/json")
     public List<Item> getAllItems() {
         return itemService.getAllItems();
     }
+
 
     // GET items by category (e.g., ?category=lampen)
     @GetMapping("/search")
