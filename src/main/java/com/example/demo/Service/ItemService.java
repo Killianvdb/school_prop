@@ -19,10 +19,15 @@ public class ItemService {
     }
 
     public List<Item> getItemsByCategory(String category) {
-        return itemRepository.findByCategory(category);
+        return itemRepository.findAllByCategory(category);
     }
 
     public Item addItem(Item item) {
         return itemRepository.save(item);
     }
+
+    public List<Item> getAvailableItems() {
+        return itemRepository.findAllByAvailable(true);
+    }
+
 }
