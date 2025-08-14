@@ -2,7 +2,6 @@ package com.example.demo.Controller;
 
 import com.example.demo.Entities.Item;
 import com.example.demo.Repository.ItemRepository;
-import com.example.demo.Service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,12 +18,12 @@ public class ItemController {
     public ItemController(ItemRepository itemRepository) {
         this.itemRepository = itemRepository;
     }
+
     // GET all items
     @GetMapping(produces = "application/json")
     public List<Item> getAllItems() {
         return itemRepository.findAll();
     }
-
 
     // GET items by category (e.g., ?category=lampen)
     @GetMapping("/search")
@@ -41,10 +40,10 @@ public class ItemController {
         Item saved = itemRepository.save(item);
         return ResponseEntity.ok(saved);
     }
+
+    // GET all available items
     @GetMapping("/available")
     public List<Item> getAvailableItems() {
         return itemRepository.findAllByAvailable(true);
     }
-
-
 }
