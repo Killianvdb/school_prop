@@ -25,10 +25,7 @@ public class UserService {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new IllegalArgumentException("Email already taken");
         }
-
-        // ✅ Hash password only once, using injected encoder
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-
         return userRepository.save(user);
     }
 
@@ -37,6 +34,7 @@ public class UserService {
                 .filter(user -> passwordEncoder.matches(password, user.getPassword()))
                 .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
     }
+
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
@@ -45,5 +43,4 @@ public class UserService {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
-
 }
