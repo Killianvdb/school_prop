@@ -1,5 +1,7 @@
 School Property Reservation System
+
 📌 Overview
+
 This project is a School Property Reservation System built with Spring Boot.
 It allows users to:
 
@@ -13,7 +15,9 @@ Make reservations and manage checkout.
 
 The system is designed to streamline the process of borrowing and managing school property.
 
+
 ⚠️ Note: This project is still under development.
+
 
 🛠️ Tech Stack
 Java 17+
@@ -29,22 +33,36 @@ Hibernate / JPA
 H2 / MySQL (configure in application.properties)
 
 📂 Project Structure
+
 bash
 Copier
 Modifier
 school_prop-main/
+
 ├── src/main/java/com/example/demo/
+
 │   ├── Controller/        # REST controllers (Cart, Item, User, Reservation)
+
 │   ├── DTO/               # Data Transfer Objects
+
 │   ├── Entities/          # JPA entities (User, Cart, Item, Reservation, etc.)
+
 │   ├── Repository/        # JPA repositories
+
 │   ├── Security/          # Security configuration
+
 │   ├── Service/           # Business logic
+
 │   └── DemoApplication.java
+
 ├── src/main/resources/
+
 │   └── application.properties
+
 ├── pom.xml                # Maven dependencies
+
 🚀 Getting Started
+
 1. Clone the repository
 bash
 Copier
@@ -62,6 +80,7 @@ Modifier
 spring.datasource.url=jdbc:h2:mem:testdb
 spring.datasource.driverClassName=org.h2.Driver
 spring.jpa.hibernate.ddl-auto=update
+
 3. Build and run
 bash
 Copier
@@ -72,7 +91,10 @@ API runs on: http://localhost:8080
 
 Swagger / API docs: (to be added)
 
+
 📖 API Endpoints (WIP)
+
+
 POST /api/users/register → Register a new user
 
 POST /api/users/login → Authenticate user
@@ -86,6 +108,7 @@ POST /api/reservations → Make a reservation
 (More endpoints coming soon)
 
 ✅ Features (Planned & Completed)
+
  User authentication (Spring Security)
 
  Item browsing & cart system
