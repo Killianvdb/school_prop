@@ -1,127 +1,98 @@
-School Property Reservation System
+# School Property Reservation System
 
-📌 Overview
+## 📌 Overview
 
-This project is a School Property Reservation System built with Spring Boot.
-It allows users to:
+School Property Reservation System is a web application for managing and reserving school-owned items (like lamps, equipment, etc.). Built with Spring Boot, it helps teachers and students easily browse, reserve, and track items, streamlining school inventory management.
 
-Register and log in securely.
+## 🎯 Features
 
-Browse available items (e.g., lamps, equipment, etc.).
+- Secure user registration and login (Spring Security)
+- Browse available items
+- Add items to a cart and checkout
+- Make and manage reservations
+- Admin dashboard for inventory management
+- Planned: Notifications (email/system alerts), Swagger API docs
 
-Add items to a cart.
+## 🛠️ Tech Stack
 
-Make reservations and manage checkout.
+- Java 17+
+- Spring Boot
+- Spring Security
+- Hibernate / JPA
+- Maven
+- H2 / MySQL (configurable in `application.properties`)
 
-The system is designed to streamline the process of borrowing and managing school property.
+## 📂 Project Structure
 
-
-⚠️ Note: This project is still under development.
-
-
-🛠️ Tech Stack
-Java 17+
-
-Spring Boot
-
-Spring Security
-
-Maven
-
-Hibernate / JPA
-
-H2 / MySQL (configure in application.properties)
-
-📂 Project Structure
-
-bash
-Copier
-Modifier
-school_prop-main/
-
+```
+school_prop/
 ├── src/main/java/com/example/demo/
-
 │   ├── Controller/        # REST controllers (Cart, Item, User, Reservation)
-
 │   ├── DTO/               # Data Transfer Objects
-
 │   ├── Entities/          # JPA entities (User, Cart, Item, Reservation, etc.)
-
 │   ├── Repository/        # JPA repositories
-
 │   ├── Security/          # Security configuration
-
 │   ├── Service/           # Business logic
-
 │   └── DemoApplication.java
-
 ├── src/main/resources/
-
 │   └── application.properties
-
 ├── pom.xml                # Maven dependencies
+```
 
-🚀 Getting Started
+## Getting Started
 
-1. Clone the repository
-bash
-Copier
-Modifier
-git clone https://github.com/your-username/school_prop.git
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Killianvdb/school_prop.git
 cd school_prop
-2. Configure database
-Edit src/main/resources/application.properties to match your database settings.
+```
 
-For example (H2 in-memory DB):
+### 2. Configure the database
 
-properties
-Copier
-Modifier
+Edit `src/main/resources/application.properties` for your database settings. Example (H2):
+
+```properties
 spring.datasource.url=jdbc:h2:mem:testdb
 spring.datasource.driverClassName=org.h2.Driver
 spring.jpa.hibernate.ddl-auto=update
+```
 
-3. Build and run
-bash
-Copier
-Modifier
+### 3. Build and run
+
+```bash
 ./mvnw spring-boot:run
-4. Access the app
-API runs on: http://localhost:8080
+```
 
-Swagger / API docs: (to be added)
+### 4. Access the application
 
+- API: [http://localhost:8080](http://localhost:8080)
+- Swagger/API docs: _Coming soon_
 
-📖 API Endpoints (WIP)
+## 📖 API Endpoints (Work In Progress)
 
+- `POST /api/users/register` : Register a new user
+- `POST /api/users/login` : Authenticate user
+- `GET /api/items` : List available items
+- `POST /api/cart` : Add item to cart
+- `POST /api/reservations` : Make a reservation
 
-POST /api/users/register → Register a new user
+_More endpoints will be documented soon._
 
-POST /api/users/login → Authenticate user
+## Contributing
 
-GET /api/items → List available items
+Contributions are welcome! Fork the repository and submit a pull request.
 
-POST /api/cart → Add item to cart
+## 📜 License
 
-POST /api/reservations → Make a reservation
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-(More endpoints coming soon)
+---
+helping links for this project  
+for spring boot basics  
+https://www.youtube.com/watch?v=9SGDpanrc8U 
+https://spring.io/projects/spring-boot 
+https://github.com/David-VS/Blog3TI   
 
-✅ Features (Planned & Completed)
-
- User authentication (Spring Security)
-
- Item browsing & cart system
-
- Reservation management UI
-
- Admin dashboard for inventory
-
- Notifications (email / system alerts)
-
-🤝 Contributing
-Contributions are welcome! Feel free to fork the repo and submit a pull request.
-
-📜 License
-This project is licensed under the MIT License – see the LICENSE file for details.
-
+for API 
+https://www.baeldung.com/building-a-restful-web-service-with-spr
