@@ -1,63 +1,68 @@
 package com.example.demo.Service;
 
 import com.example.demo.Entities.*;
-import com.example.demo.Repository.CartRepo;
-import com.example.demo.Repository.ReservationRepository;
+import com.example.demo.Repository.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
 import java.util.List;
 
 @Service
 public class ReservationService {
-    private final ReservationRepository reservationRepository;
+    private final ReservationRepository reservationRepo;
     private final CartRepo cartRepo;
 
-    public ReservationService(ReservationRepository reservationRepository, CartRepo cartRepo) {
-        this.reservationRepository = reservationRepository;
+    @Autowired
+    public ReservationService(ReservationRepository reservationRepo,
+                              CartRepo cartRepo) {
+        this.reservationRepo = reservationRepo;
         this.cartRepo = cartRepo;
     }
-
     public List<Reservation> myReservations(User user) {
-        return reservationRepository.findByUser(user);
+        return reservationRepo.findByUser(user);
     }
 
-    @Transactional
-    public Reservation checkout(User user, LocalDate start, LocalDate end) {
-        if (start == null || end == null || end.isBefore(start)) {
-            throw new IllegalArgumentException("Invalid start/end dates");
-        }
+    public Reservation checkout(User user) {
+        Cart cart = cartRepo.findByUser(user)
+                .orElseThrow(() -> new IllegalArgumentException("Cart not found"));
 
-        Cart cart = cartRepo.findByUser(user).orElseThrow(() -> new IllegalStateException("Cart not found"));
         if (cart.getItems() == null || cart.getItems().isEmpty()) {
-            throw new IllegalStateException("Cart is empty");
+            throw new IllegalArgumentException("Cart is empty");
         }
 
-        // Availability check: any overlap for items in cart?
-        List<Long> itemIds = cart.getItems().stream().map(ci -> ci.getItem().getId()).toList();
-        boolean conflict = !reservationRepository.findOverlapping(itemIds, start, end).isEmpty();
-        if (conflict) {
-            throw new IllegalStateException("One or more items are already reserved in this period");
-        }
+        // Validate all items have dates and no conflicts
+        cart.getItems().forEach(ci -> {
+            if (ci.getStartDate() == null || ci.getEndDate() == null) {
+                throw new IllegalArgumentException("Start and end dates are required for all cart items");
+            }
+            if (ci.getEndDate().isBefore(ci.getStartDate())) {
+                throw new IllegalArgumentException("End date must be after start date");
+            }
+            boolean conflict = reservationRepo.existsConflict(
+                    ci.getItem().getId(), ci.getStartDate(), ci.getEndDate());
+            if (conflict) {
+                throw new IllegalArgumentException("Item '" + ci.getItem().getName() + "' is already reserved in that period");
+            }
+        });
 
         // Create reservation
-        Reservation r = new Reservation();
-        r.setUser(user);
-        r.setStartDate(start);
-        r.setEndDate(end);
+        Reservation reservation = new Reservation();
+        reservation.setUser(user);
 
+        // Copy cart items into reservation items
         for (CartItem ci : cart.getItems()) {
             ReservationItem ri = new ReservationItem();
-            ri.setReservation(r);
+            ri.setReservation(reservation);
             ri.setItem(ci.getItem());
             ri.setQuantity(ci.getQuantity());
-            r.getItems().add(ri);
+            ri.setStartDate(ci.getStartDate());
+            ri.setEndDate(ci.getEndDate());
+            reservation.getItems().add(ri);
         }
 
-        Reservation saved = reservationRepository.save(r);
+        // Persist reservation (cascades reservation items)
+        Reservation saved = reservationRepo.save(reservation);
 
-        // Clear cart
+        // Clear the cart after successful reservation
         cart.getItems().clear();
         cartRepo.save(cart);
 

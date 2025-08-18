@@ -137,7 +137,7 @@ public class CartController {
                 .or(() -> userRepository.findByUsername(emailOrUsername))
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
-    // ✅ Add item to cart
+    // Add item to cart
     @PostMapping("/add")
     public ResponseEntity<Cart> addToCart(
             Authentication authentication,

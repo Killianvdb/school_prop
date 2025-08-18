@@ -13,11 +13,11 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     // Find reservations that overlap a period for any of the provided item IDs
     @Query("""
-        select distinct r from Reservation r
-        join r.items ri
-        where ri.item.id in (:itemIds)
-          and r.startDate <= :endDate
-          and r.endDate >= :startDate
-    """)
-    List<Reservation> findOverlapping(List<Long> itemIds, LocalDate startDate, LocalDate endDate);
+            SELECT COUNT(ri) > 0
+            FROM ReservationItem ri
+            WHERE ri.item.id = :itemId
+              AND ri.startDate <= :endDate
+              AND ri.endDate   >= :startDate
+           """)
+    boolean existsConflict(Long itemId, LocalDate startDate, LocalDate endDate);
 }
