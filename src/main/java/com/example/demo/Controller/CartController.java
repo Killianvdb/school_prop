@@ -1,18 +1,16 @@
 package com.example.demo.Controller;
 
-import com.example.demo.Entities.Cart;
-import com.example.demo.Entities.CartItem;
-import com.example.demo.Entities.Item;
-import com.example.demo.Entities.User;
-import com.example.demo.Repository.CartItemRepo;
-import com.example.demo.Repository.CartRepo;
-import com.example.demo.Repository.ItemRepository;
-import com.example.demo.Repository.UserRepository;
+import com.example.demo.Entities.*;
+import com.example.demo.Repository.*;
+import com.example.demo.Service.CartService;
+import com.example.demo.Service.ReservationService;
+import com.example.demo.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @RestController
@@ -23,16 +21,27 @@ public class CartController {
     private final CartItemRepo cartItemRepository;
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final ReservationService reservationService;
+    private final UserService userService;
+
+    private final CartService cartService;
+
 
     @Autowired
     public CartController(CartRepo cartRepository,
                           CartItemRepo cartItemRepository,
                           ItemRepository itemRepository,
-                          UserRepository userRepository) {
+                          UserRepository userRepository,
+                          ReservationService reservationService,
+                          UserService userService,
+                          CartService cartService) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
+        this.reservationService = reservationService;
+        this.userService = userService;
+        this.cartService = cartService;
     }
 
     // Get cart for logged-in user
@@ -44,12 +53,14 @@ public class CartController {
                 .orElse(ResponseEntity.ok(new Cart()));
     }
 
-    // Add item to logged-in user's cart
+    // Add item to logged-in user's cart (now with dates)
     @PostMapping("/my/add")
-    public ResponseEntity<CartItem> addItemToMyCart(
+    public ResponseEntity<?> addItemToMyCart(
             Authentication authentication,
             @RequestParam Long itemId,
-            @RequestParam(defaultValue = "1") int quantity) {
+            @RequestParam(defaultValue = "1") int quantity,
+            @RequestParam String startDate,
+            @RequestParam String endDate) {
 
         User user = getAuthenticatedUser(authentication);
 
@@ -62,9 +73,17 @@ public class CartController {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new RuntimeException("Item not found"));
 
-        // If item already in cart → increase quantity
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate end = LocalDate.parse(endDate);
+        if (end.isBefore(start)) {
+            return ResponseEntity.badRequest().body("End date must be after start date");
+        }
+
+        // If item already in cart for SAME dates → increase quantity
         Optional<CartItem> existingItemOpt = cart.getItems().stream()
-                .filter(ci -> ci.getItem().getId().equals(itemId))
+                .filter(ci -> ci.getItem().getId().equals(itemId)
+                        && start.equals(ci.getStartDate())
+                        && end.equals(ci.getEndDate()))
                 .findFirst();
 
         if (existingItemOpt.isPresent()) {
@@ -78,6 +97,8 @@ public class CartController {
         cartItem.setCart(cart);
         cartItem.setItem(item);
         cartItem.setQuantity(quantity);
+        cartItem.setStartDate(start);
+        cartItem.setEndDate(end);
 
         return ResponseEntity.ok(cartItemRepository.save(cartItem));
     }
@@ -100,23 +121,30 @@ public class CartController {
         return ResponseEntity.badRequest().body("Item not found in your cart");
     }
 
-    // Checkout for logged-in user
+    // Checkout for logged-in user -> creates a Reservation
     @PostMapping("/my/checkout")
-    public ResponseEntity<String> checkoutMyCart(Authentication authentication) {
+    public ResponseEntity<?> checkoutMyCart(Authentication authentication) {
         User user = getAuthenticatedUser(authentication);
-
-        Cart cart = cartRepository.findByUser(user).orElse(null);
-        if (cart != null && cart.getItems() != null) {
-            cart.getItems().clear();
-            cartRepository.save(cart);
-        }
-        return ResponseEntity.ok("Checkout successful");
+        Reservation reservation = reservationService.checkout(user);
+        return ResponseEntity.ok(reservation);
     }
 
     // Helper method to get authenticated user from Spring Security
     private User getAuthenticatedUser(Authentication authentication) {
-        String email = authentication.getName();
-        return userRepository.findByEmail(email)
+        String emailOrUsername = authentication.getName();
+        // Try email first, then username
+        return userRepository.findByEmail(emailOrUsername)
+                .or(() -> userRepository.findByUsername(emailOrUsername))
                 .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+    // ✅ Add item to cart
+    @PostMapping("/add")
+    public ResponseEntity<Cart> addToCart(
+            Authentication authentication,
+            @RequestParam Long itemId,
+            @RequestParam int quantity) {
+
+        User user = userService.getUserByUsername(authentication.getName());
+        return ResponseEntity.ok(cartService.addItem(user, itemId, quantity));
     }
 }

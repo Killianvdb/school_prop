@@ -1,6 +1,7 @@
 package com.example.demo.Entities;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 public class CartItem {
@@ -16,8 +17,11 @@ public class CartItem {
     @JoinColumn(name = "item_id")
     private Item item;
 
-    private int quantity;
 
+    private int quantity = 1;
+
+    private LocalDate startDate;
+    private LocalDate endDate;
     public Long getId() {
         return id;
     }
@@ -49,4 +53,9 @@ public class CartItem {
     public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
+    public LocalDate getStartDate() { return startDate; }
+    public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
+
+    public LocalDate getEndDate() { return endDate; }
+    public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
 }
